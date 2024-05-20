@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    api.openshift.com/addon-managed-odh-delete: "true"
+  name: delete-self-managed-odh
+  namespace: redhat-ods-operator

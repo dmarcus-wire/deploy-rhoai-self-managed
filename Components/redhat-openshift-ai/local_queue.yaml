@@ -1,0 +1,10 @@
+apiVersion: kueue.x-k8s.io/v1beta1
+kind: LocalQueue
+metadata:
+  # namespace: test
+  name: local-queue-test
+  annotations:
+    kueue.x-k8s.io/default-queue: 'true'
+spec:
+  namespaceSelector: {}  # match all.
+  clusterQueue: cluster-queue
