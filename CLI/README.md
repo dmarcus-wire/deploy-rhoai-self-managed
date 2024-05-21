@@ -1,43 +1,54 @@
 # Deploy RHOAI using the CLI
 
 ## Login
+
 1. grab your login command
+
 ```
 oc login --token=<YOUR_TOKEN> --server=https://api.<YOUR_CLUSTER>.com:6443
 ```
 
 ## Admin user
+
 Create `cluster-admin`
 [Supported Identity Providers](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.15/html-single/authentication_and_authorization/index#supported-identity-providers)
 
 To define an [htpasswd](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.13/html-single/authentication_and_authorization/index#configuring-htpasswd-identity-provider) identity provider, perform the following tasks:
 
-### Create an htpasswd file to store the user and password information.
+### Create an htpasswd file to store the user and password information
+
 `htpasswd -c -B -b users.htpasswd <username> <password>`
 
 ### (optional) Configure bash completion
+
 You must have `oc` and `bash-completion` packages installed
 
 `source <(oc completion zsh)`
 
-### Create a secret to represent the htpasswd file.
+### Create a secret to represent the htpasswd file
+
 `oc create secret generic htpass-secret --from-file=htpasswd=htpasswd/users.htpasswd -n openshift-config`
 
-### Define an htpasswd identity provider resource that references the secret.
+### Define an htpasswd identity provider resource that references the secret
+
 see the htpasswd/htpass-cr.yaml in this repo
 
-### Apply the resource to the default OAuth configuration to add the identity provider.
+### Apply the resource to the default OAuth configuration to add the identity provider
+
 `oc apply -f htpasswd/htpass-cr.yaml`
 
 You will have to a few minutes for the account to resolve.
 
-### Log in to the cluster as a user from your identity provider, entering the password when prompted.
+### Log in to the cluster as a user from your identity provider, entering the password when prompted
+
 `oc login -u <username>`
 
 ### Updating users for htpasswd identity provider
+
 [source](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.13/html-single/authentication_and_authorization/index#identity-provider-htpasswd-update-users_configuring-htpasswd-identity-provider)
 
 ### Creating a cluster admin
+
 The [cluster-admin](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.15/html/authentication_and_authorization/using-rbac#creating-cluster-admin_using-rbac) role is required to perform administrator level tasks.
 
 `oc adm policy add-cluster-role-to-user cluster-admin <user>`
@@ -45,21 +56,26 @@ The [cluster-admin](https://access.redhat.com/documentation/en-us/openshift_cont
 ## Installing the Red Hat OpenShift AI Operator
 
 ### Login with cluster-admin user
+
 `oc login -u admin`
 
 Enter password when prompted
 
 ### Create the namespace in your OpenShift Container Platform cluster
+
 `oc create -f Operators/redhat-openshift-ai/namespace.yaml`
 
-### Create an operator group for installation of the Operator 
+### Create an operator group for installation of the Operator
+
 `oc create -f Operators/redhat-openshift-ai/operator-group.yaml`
 
 ### Create a subscription for installation of the Operator
+
 See definitions for [channels](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2.9/html/installing_and_uninstalling_openshift_ai_self-managed/installing-and-deploying-openshift-ai_install#installing-openshift-data-science-operator-using-cli_operator-install)
 `oc create -f Operators/redhat-openshift-ai/subscription.yaml`
 
 #### Verify installation
+
 Check the installed operators for `rhods-operator.redhat-ods-operator`
 `oc get operators`
 
@@ -67,6 +83,7 @@ Check the created projects `redhat-ods-applications|redhat-ods-monitoring|redhat
 `oc get projects | grep -i redhat-ods`
 
 #### Missing Operator reported by default-dcsi
+
 ```
 2 errors occurred:
 * failed to find the pre-requisite Service Mesh Operator subscription, please ensure Service Mesh Operator is installed. failed to find the pre-requisite operator subscription "servicemeshoperator", please ensure operator is installed. missing operator "servicemeshoperator"
@@ -74,21 +91,24 @@ Check the created projects `redhat-ods-applications|redhat-ods-monitoring|redhat
 ```
 
 ## Installing and managing Red Hat OpenShift AI components
+
 Create and configure a DataScienceCluster (dsc) object to install Red Hat OpenShift AI components as part of a new installation.
 
 ### Create a DataScienceCluster object custom resource (CR) file
 
 Set the value of the managementState field to either Managed or Removed.
+
 `oc create -f Components/redhat-openshift-ai/rhods-operator-dsc.yaml `
 
-
 [!NOTE]
+
 - Managed: The Operator actively manages the component, installs it, and tries to keep it active. The Operator will upgrade the component only if it is safe to do so.
 - Removed: The Operator actively manages the component but does not install it. If the component is already installed, the Operator will try to remove it.
 - After installing OpenShift AI, the Red Hat OpenShift AI Operator automatically creates an empty odh-trusted-ca-bundle configuration file (ConfigMap)
 
 ## KServe component dependencies
-To fully install the KServe component, which is used by the single-model serving platform to serve large models, you must install Operators for Red Hat OpenShift Service Mesh and Red Hat OpenShift Serverless and perform additional configuration. 
+
+To fully install the KServe component, which is used by the single-model serving platform to serve large models, you must install Operators for Red Hat OpenShift Service Mesh and Red Hat OpenShift Serverless and perform additional configuration.
 
 1. kserve: orchestrates model serving for all types of models
 1. serverless allows for serverless deployments of models
@@ -97,33 +117,41 @@ To fully install the KServe component, which is used by the single-model serving
 
 [source](https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2.9/html/serving_models/serving-large-models_serving-large-models#model_serving_runtimes)
 
-### Monitoring 
+### Monitoring
+
 Prometheus scrapes metrics for each of the pre-installed model-serving runtimes
 
 ### Authorino
+
 [Authorino](https://github.com/kuadrant/authorino) ensures that only authorized parties can make inference requests to the models. It is a Kubernetes-native authorization service for tailor-made Zero Trust API security.
 
 ### Install Options
+
 1. [Automated](https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2.9/html/serving_models/serving-large-models_serving-large-models#configuring-automated-installation-of-kserve_serving-large-models)
 
 #### Install KServe dependencies - ServiceMesh
 
 Verify/create the istio-system namespace
+
 `oc create -f Components/redhat-servicemesh/namespace.yaml`
 
 ![NOTE] The RHOAI operator may create the istio-system namespace
 
 Install the operator
+
 `oc create -f Operators/redhat-servicemesh/subscription.yaml`
 
 After you install the operator you have 3 configurations: ControlPlane, Member, MemberRole
 Control Plane
+
 `oc create -f Components/redhat-servicemesh/smcp.yaml`
 
 Verify the pods are running for the service mesh control plane, ingress gateway, and egress gateway
+
 `oc get pods -n istio-system`
 
 Expected output
+
 ```
 istio-egressgateway-f9b5cf49c-c7fst    1/1     Running   0          59s
 istio-ingressgateway-c69849d49-fjswg   1/1     Running   0          59s
@@ -133,6 +161,7 @@ istiod-minimal-5c68bf675d-whrns        1/1     Running   0          68s
 This should clear the errors thrown by the default-dcsi mentioned above.
 
 #### Create the Knative Serving instance
+
 [source](https://docs.openshift.com/serverless/1.32/install/install-serverless-operator.html?extIdCarryOver=true&intcmp=701f2000001OMHaAAO&sc_cid=701f2000001Css5AAC#serverless-install-cli_install-serverless-operator)
 
 Install the operator
@@ -146,6 +175,7 @@ Verify the success
 This will create 2 projects `knative-serving` and `knative-eventing`
 
 Create the ServiceMeshMember object for knative-serving in istio-system
+
 `oc create -f Components/redhat-servicemesh/default-smm.yaml`
 
 Create a KnativeServing object knativeserving
@@ -169,32 +199,36 @@ Verify the pods running in the knative-serving project
 
 Confirm that there are numerous running pods: activator, autoscaler, controller, domain-mapping, istio-controller
 
-
 #### Creating secure gateways for Knative Serving
 
 Set environment variables to define base directories for generation of a wildcard certificate and key for the gateways.
+
 ```
 export BASE_DIR=/tmp/kserve
 export BASE_CERT_DIR=${BASE_DIR}/certs
 ```
 
 Set an environment variable to define the common name used by the ingress controller of your OpenShift cluster
+
 ```
 export COMMON_NAME=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}' | awk -F'.' '{print $(NF-1)"."$NF}')
 ```
 
 Set an environment variable to define the domain name used by the ingress controller of your OpenShift cluster.
+
 ```
 export DOMAIN_NAME=$(oc get ingresses.config.openshift.io cluster -o jsonpath='{.spec.domain}')
 ```
 
 Create the required base directories for the certificate generation, based on the environment variables that you previously set.
+
 ```
 mkdir ${BASE_DIR}
 mkdir ${BASE_CERT_DIR}
 ```
 
 Create the OpenSSL configuration for generation of a wildcard certificate.
+
 ```
 $ cat <<EOF> ${BASE_DIR}/openssl-san.config
 [ req ]
@@ -205,6 +239,7 @@ EOF
 ```
 
 Generate a root certificate.
+
 ```
 openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 \
 -subj "/O=Example Inc./CN=${COMMON_NAME}" \
@@ -213,6 +248,7 @@ openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 \
 ```
 
 Generate a wildcard certificate signed by the root certificate.
+
 ```
 openssl req -x509 -newkey rsa:2048 \
 -sha256 -days 3560 -nodes \
@@ -227,17 +263,20 @@ openssl x509 -in ${BASE_DIR}/wildcard.crt -text
 ```
 
 Verify the wildcard certificate.
+
 ```
 openssl verify -CAfile ${BASE_DIR}/root.crt ${BASE_DIR}/wildcard.crt
 ```
 
 Export the wildcard key and certificate that were created by the script to new environment variables.
+
 ```
 export TARGET_CUSTOM_CERT=${BASE_CERT_DIR}/wildcard.crt
 export TARGET_CUSTOM_KEY=${BASE_CERT_DIR}/wildcard.key
 ```
 
 Create a TLS secret in the istio-system namespace using the environment variables that you set for the wildcard certificate and key.
+
 ```
 oc create secret tls wildcard-certs --cert=${TARGET_CUSTOM_CERT} --key=${TARGET_CUSTOM_KEY} -n istio-system
 
@@ -245,17 +284,21 @@ oc create secret tls wildcard-certs --cert=${TARGET_CUSTOM_CERT} --key=${TARGET_
 
 oc create secret tls wildcard-certs --cert=/tmp/kserve/wildcard.crt --key=/tmp/kserve/wildcard.key -n istio-system
 ```
+
 ![NOTE]error: Cannot read file /tmp/kserve/certs/wildcard.crt, open /tmp/kserve/certs/wildcard.crt: no such file or directory - run the direct path not variable
 
 Create a gateways.yaml YAML file with the following contents:
+
 ```
 oc apply -f Secure/gateways.yaml
 ```
 
 Verify the gateways
+
 `oc get gateway --all-namespaces`
 
 Confirm that you see the local and ingress gateways that you created in the knative-serving namespace
+
 ```
 knative-serving   knative-ingress-gateway   26s
 knative-serving   knative-local-gateway     26s
@@ -263,14 +306,16 @@ knative-serving   knative-local-gateway     26s
 
 ### Installing KServe
 
-In the default-dcsi.yaml, change th service mesh to Unmanaged
+In the default-dcsi.yaml, change th service mesh to Un-managed
+
 ```
 spec:
  serviceMesh:
    managementState: Unmanaged
 ```
 
-In the default-dcs.yaml, change the Kserve serving component to Unmanaged
+In the default-dcs.yaml, change the Kserve serving component to Un-managed
+
 ```
 spec:
  components:
@@ -281,23 +326,27 @@ spec:
 ```
 
 ## Install Authorino
+
 Authorino is Red Hat's Kubernetes-native lightweight external authorization service for tailor-made Zero Trust API security.
 
 `oc apply -f Operators/redhat-authorino/subscription.yaml`
 
 ### Create Authorino Instance
 
-the automated process creates a project `redhat-ods-applications-auth-provider`
+The automated process creates a project `redhat-ods-applications-auth-provider`
 
-create the namespace in the same namespace for the manual process 
+create the namespace in the same namespace for the manual process
+
 `oc create -f Components/redhat-authorino/namespace.yaml`
 
 enroll the new namespace for the Authorino instance in your existing OpenShift Service Mesh instance
-`oc create -f Components/redhat-authorino/smm.yaml` 
 
-request an instance of the external authorization service by creating an Authorino custom resource using a minimal namespaced example. Namespaced instances only watch auth resources (AuthConfig and Secrets) created in the same namespace as the Authorino service. Use this mode for dedicated instances that do not require elevated privileges.
+`oc create -f Components/redhat-authorino/smm.yaml`
+
+Request an instance of the external authorization service by creating an Authorino custom resource using a minimal namespaced example. Namespaced instances only watch auth resources (AuthConfig and Secrets) created in the same namespace as the Authorino service. Use this mode for dedicated instances that do not require elevated privileges.
 
 Patch the Authorino deployment to inject an Istio sidecar, which makes the Authorino instance part of your OpenShift Service Mesh instance
+
 `oc patch deployment authorino -n redhat-ods-applications-auth-provider -p '{"spec": {"template":{"metadata":{"labels":{"sidecar.istio.io/inject":"true"}}}} }'`
 
 ```
@@ -325,15 +374,17 @@ Verify the authorino instance is running
 `oc get pods -n redhat-ods-applications-auth-provider -o="custom-columns=NAME:.metadata.name,STATUS:.status.phase,CONTAINERS:.spec.containers[*].name"`
 
 Expected output
+
 ```
 NAME                         STATUS    CONTAINERS
 authorino-59888d5766-z9bvn   Running   authorino,istio-proxy
 ```
 
 ### Configuring an OpenShift Service Mesh instance to use Authorino
-you must configure your OpenShift Service Mesh instance to use Authorino as an authorization provider
 
-becauase the smcp already has other extension providers configured, you have to manually edit the ServiceMeshControlPlane to add the config
+You must configure your OpenShift Service Mesh instance to use Authorino as an authorization provider
+
+Because the smcp already has other extension providers configured, you have to manually edit the ServiceMeshControlPlane to add the config
 
 ```
   techPreview:
@@ -349,9 +400,11 @@ becauase the smcp already has other extension providers configured, you have to 
 ```
 
 Verify Authorino instance hs been added as an extension provider in service mesh
+
 `oc get configmap istio-minimal -n istio-system --output=jsonpath={.data.mesh}`
 
 Confirm that you see output similar to the following example, which shows that the Authorino instance has been successfully added as an extension provider
+
 ```
 - envoyExtAuthzGrpc:
     port: 50051
@@ -362,7 +415,8 @@ rootNamespace: istio-system
 ```
 
 ### Configuring authorization for KServe
-configure the single-model serving platform to use Authorino, you must create a global AuthorizationPolicy resource that is applied to the KServe predictor pods that are created when you deploy a model. 
+
+configure the single-model serving platform to use Authorino, you must create a global AuthorizationPolicy resource that is applied to the KServe predictor pods that are created when you deploy a model.
 
 to account for the multiple network hops that occur when you make an inference request to a model, you must create an EnvoyFilter resource that continually resets the HTTP host header to the one initially included in the inference request.
 
@@ -399,6 +453,7 @@ activator-host-header               95s
 ```
 
 ## Certificates
+
 Certificates are used by various components in OpenShift Container Platform to validate access to the cluster
 
 - the Red Hat OpenShift AI Operator automatically creates an empty odh-trusted-ca-bundle configuration file (ConfigMap)
@@ -435,10 +490,10 @@ You can use the Red Hat OpenShift AI dashboard to enable the single-model servin
 ## Create an Accelerator Profile
 
 Tolerations:
+
 1. NoSchedule - New pods that do not match the taint are not scheduled onto that node. Existing pods on the node remain.
 1. PreferNoSchedule - New pods that do not match the taint might be scheduled onto that node, but the scheduler tries not to. Existing pods on the node remain.
 1. NoExecute - New pods that do not match the taint cannot be scheduled onto that node. Existing pods on the node that do not have a matching toleration are removed.
-
 
 ```
 apiVersion: dashboard.opendatahub.io/v1
@@ -468,7 +523,8 @@ Check the status of the pods
 
 `oc get pods | grep -E 'codeflare-operator|kuberay-operator|kueue-controller-manager'`
 
-Expected output 
+Expected output
+
 ```
 codeflare-operator-manager-7544cc8fd-2vcmv                        1/1     Running   6               45h
 kuberay-operator-f9f7b7dc9-rb72q                                  1/1     Running   9               45h
@@ -479,7 +535,7 @@ kueue-controller-manager-665778777b-6gm5t                         1/1     Runnin
 
 Create an empty Kueue resource flavor and apply it
 
-`oc apply -f Components/redhat-openshift-ai/default_flavor.yaml`         
+`oc apply -f Components/redhat-openshift-ai/default_flavor.yaml`
 
 Create a cluster queue to manage the empty Kueue resource flavor
 
@@ -495,13 +551,14 @@ Create a local queue that points to your cluster queue
 
 - If you do not create a default local queue, you must specify a local queue in each notebook.
 
-`oc apply -f Components/redhat-openshift-ai/local_queue.yaml `
+`oc apply -f Components/redhat-openshift-ai/local_queue.yaml`
 
 Verify the status of the local queue in a project
 
 `oc get LocalQueue -A`
 
 Expected output
+
 ```
 NAMESPACE                 NAME               CLUSTERQUEUE    PENDING WORKLOADS   ADMITTED WORKLOADS
 redhat-ods-applications   local-queue-test   cluster-queue   0                   0
@@ -521,6 +578,7 @@ If you want to change the default configuration of the CodeFlare Operator for di
 - rayDashboardOauthEnabled - OpenShift AI places an OpenShift OAuth proxy in front of the Ray Cluster head node. Users must then authenticate by using their OpenShift cluster login credentials when accessing the Ray Dashboard through the browser.
 
 ### Running distributed data science workloads from notebooks
+
 To run a distributed data science workload from a notebook, launch a notebook (not code-server).
 
 Clone in the CodeFlare SDK
@@ -534,13 +592,16 @@ Login into OpenShift from the Terminal.
 
 Launch the notebook
 
-- add a cell 
+- add a cell
+
 ```
 import warnings
 warnings.filterwarnings('ignore')
 ```
+
 - set the login cell to Raw (do not run)
 - update the cluster config (namespace and add the local_queue)
+
 ```
 # Create and configure our cluster object
 # The SDK will try to find the name of your default local queue based on the annotation "kueue.x-k8s.io/default-queue": "true" unless you specify the local queue manually below
