@@ -1,6 +1,6 @@
 # deploy-rhoai-self-managed
 
-## User Inferface
+## User Interface
 
 One of the most important concepts is the OCP Project.
 
@@ -138,124 +138,119 @@ Based on Red Hat OpenShift AI v2.9
 |                     |            |Serverless   |4 CPUs and 16 GB   |                 |
 |                     |            |Authorino    |                   |enable token authorization for models|
 
+## CLI - per [docs](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2.9/html/installing_and_uninstalling_openshift_ai_self-managed)
 
-
-# CLI - per [docs](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2.9/html/installing_and_uninstalling_openshift_ai_self-managed)
 - [ ] oc login
 - [ ] create cluster-admin
-    - [ ] create cluster-admin via htpass
-    - [ ] create secret for htpass
-    - [ ] create and apply htpass custom resource
-    - [ ] test login as cluster-admin
-    - [ ] as Kubeadmin, add cluster-admin role
-    - [ ] login as cluster-admin
+  - [ ] create cluster-admin via htpass
+  - [ ] create secret for htpass
+  - [ ] create and apply htpass custom resource
+  - [ ] test login as cluster-admin
+  - [ ] as Kubeadmin, add cluster-admin role
+  - [ ] login as cluster-admin
 - [ ] install the operator
-    - [ ] create project redhat-ods-operator
-    - [ ] create operator-group for redhat-operator
-    - [ ] create a subscription for the redhat-ods-operator
+  - [ ] create project redhat-ods-operator
+  - [ ] create operator-group for redhat-operator
+  - [ ] create a subscription for the redhat-ods-operator
 - [ ] install the components
-    - [ ] identify components
-        - [ ] all
-        - [ ] train-only
-        - [ ] infer-only
-    - [ ] ServiceMesh
-        - [ ] verify/create istio-system project
-        - [ ] install the servicemesh operator
-        - [ ] create a ServiceMeshControlPlane
-    - [ ] Serverless
-        - [ ] install the operator
-        - [ ] create knative-serving project for openshift-serverless
-        - [ ] create the operator-group for openshift-serverless
-        - [ ] create the subscription for serverless-operator
-        - [ ] create the ServiceMeshMember object for knative-serving
-        - [ ] create the knativeserving custom resource to inject and enable the istio side car
-        - [ ] create a secure gateway for knative-serving with OpenSSL
-            - [ ] create dir for wildcard certs and keys
-            - [ ] create the OpenSSL configuration the wildcard certificate
-            - [ ] generate a root certificate
-            - [ ] generate a wildcard certificate signed by the root certificate
-            - [ ] create a TLS secret in the istio-system namespace
+  - [ ] identify components
+    - [ ] all
+    - [ ] train-only
+    - [ ] infer-only
+  - [ ] ServiceMesh
+    - [ ] verify/create istio-system project
+    - [ ] install the servicemesh operator
+    - [ ] create a ServiceMeshControlPlane
+  - [ ] Serverless
+    - [ ] install the operator
+    - [ ] create knative-serving project for openshift-serverless
+    - [ ] create the operator-group for openshift-serverless
+    - [ ] create the subscription for serverless-operator
+    - [ ] create the ServiceMeshMember object for knative-serving
+    - [ ] create the knativeserving custom resource to inject and enable the istio side car
+    - [ ] create a secure gateway for knative-serving with OpenSSL
+      - [ ] create dir for wildcard certs and keys
+      - [ ] create the OpenSSL configuration the wildcard certificate
+      - [ ] generate a root certificate
+      - [ ] generate a wildcard certificate signed by the root certificate
+    - [ ] create a TLS secret in the istio-system namespace
             - [ ] create a gateways.yaml to define the service and ingress gateway w/ TLS secret
             - [ ] verify the the local and ingress gateways 
-    - [ ] install the components
-        - [ ] configure servicemesh, servleress and authorino to manual
-            - [ ] change servicemesh to unmanaged in the default-dsci
-            - [ ] change the kserve to managed in the default-dsc
-            - [ ] change the kserve serving to unmanaged in the default-dcs
-    - [ ] install authorino
-        - [ ] apply the authorino subscription
-        - [ ] create an authorino instance
-            - [ ] create the redhat-ods-applications-auth-provider project
-            - [ ] enroll the authorino project with service mesh
-            - [ ] create an authorino instance 
-            - [ ] patch the deployment to inject the istio sidecar to include apart of service mesh
-            - [ ] Configure an Service Mesh instance to use Authorino as an extension provider
-            - [ ] Create the AuthorizationPolicy resource in the namespace for your OpenShift Service Mesh instance
-            - [ ] Create the EnvoyFilter resource in the namespace for your OpenShift Service Mesh instance
-    - [ ] add a CA bundle
-        - [ ] use self-signed certificates in a custom CA bundle separate from a cluster-wide bundle
-    - [ ] Enabling the single-model serving platform via the Dashboard
-    - [ ] Enabling GPU support
-        - [ ] Creating Accelerator Profiles
-        - [ ] Configuring accelerators for Notebook Images
-        - [ ] Configuring accelerators for Serving Runtimes
+  - [ ] install the components
+    - [ ] configure servicemesh, servleress and authorino to manual
+      - [ ] change servicemesh to unmanaged in the default-dsci
+      - [ ] change the kserve to managed in the default-dsc
+      - [ ] change the kserve serving to unmanaged in the default-dcs
+  - [ ] install authorino
+    - [ ] apply the authorino subscription
+    - [ ] create an authorino instance
+      - [ ] create the redhat-ods-applications-auth-provider project
+      - [ ] enroll the authorino project with service mesh
+      - [ ] create an authorino instance 
+      - [ ] patch the deployment to inject the istio sidecar to include apart of service mesh
+      - [ ] Configure an Service Mesh instance to use Authorino as an extension provider
+      - [ ] Create the AuthorizationPolicy resource in the namespace for your OpenShift Service Mesh instance
+      - [ ] Create the EnvoyFilter resource in the namespace for your OpenShift Service Mesh instance
+  - [ ] add a CA bundle
+    - [ ] use self-signed certificates in a custom CA bundle separate from a cluster-wide bundle
+  - [ ] Enabling the single-model serving platform via the Dashboard
+  - [ ] Enabling GPU support
+    - [ ] Creating Accelerator Profiles
+    - [ ] Configuring accelerators for Notebook Images
+    - [ ] Configuring accelerators for Serving Runtimes
 - [ ] Distributed Workloads - per [docs](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2.9/html/working_with_distributed_workloads)
-    - [ ] verify the status of the following pods in the redhat-ods-applications project:   
-        - [ ] codeflare-operator-manager
-        - [ ] kuberay-operator
-        - [ ] kueue-controller-manager
-    - [ ] configure quota management
-        - [ ] Create an empty Kueue resource flavor
-        - [ ] Create a cluster queue to manage the empty Kueue resource flavor
-            - [ ] Adjust the values per cluster
-        - [ ] Create a local queue that points to your cluster queue
-            - [ ] Configure the local_queue.yaml to cover all namespaces
-            - [ ] Verify the status of the local queue
-        - [ ] Configure the CodeFlare Operator
-            - [ ] install the codeflare-cli
-            - [ ] review the codeflare-operator-config configmap:
-                - [ ] ingressDomain
-                - [ ] mTLSEnabled
-                - [ ] rayDashboardOauthEnabled
-    - [ ] configure the Ray job specification to set submissionMode=HTTPMode only
+  - [ ] verify the status of the following pods in the redhat-ods-applications project:   
+    - [ ] codeflare-operator-manager
+    - [ ] kuberay-operator
+    - [ ] kueue-controller-manager
+  - [ ] configure quota management
+    - [ ] Create an empty Kueue resource flavor
+    - [ ] Create a cluster queue to manage the empty Kueue resource flavor
+      - [ ] Adjust the values per cluster
+    - [ ] Create a local queue that points to your cluster queue
+      - [ ] Configure the local_queue.yaml to cover all namespaces
+      - [ ] Verify the status of the local queue
+    - [ ] Configure the CodeFlare Operator
+      - [ ] install the codeflare-cli
+      - [ ] review the codeflare-operator-config configmap:
+        - [ ] ingressDomain
+        - [ ] mTLSEnabled
+        - [ ] rayDashboardOauthEnabled
+  - [ ] configure the Ray job specification to set submissionMode=HTTPMode only
 
-# RHOAI Dashboard
+## RHOAI Dashboard
+
 - [ ] Tutorials - per [docs](https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2.9/html/openshift_ai_tutorial_-_fraud_detection_example)
-    - [ ] Fraud Detection
-        - [ ] Create workbench
-        - [ ] Clone in repo
-        - [ ] Train model
-        - [ ] Store model 
-        - [ ] Deploy the model on a single-model server
-        - [ ] Deploy the model on a multi-model server
-        - [ ] Configure Token authorization w/ service account
-        - [ ] Test the inference API via Terminal
-        - [ ] Build training with Elyra
-            - Launch Elyra pipeline editor
-            - Configure pipeline properties for the nodes
-            - Drag the objects on the Elyra canvas
-            - Configure the Node Properties for File Dependencies
-            - Configure the data connection for the Node using Kubernetes Secrets
-            - Execute the DAG from the pipeline editor
-            - Inspect the Run Details 
-                - [ ] Schedule the pipeline to run once
-                - [ ] Schedule the pipeline to run on a schedule
-        - [ ] Build training with kfp SDK
-            - [ ] Import Pipeline coded with kfp SDK
+  - [ ] Fraud Detection
+    - [ ] Create workbench
+    - [ ] Clone in repo
+    - [ ] Train model
+    - [ ] Store model 
+    - [ ] Deploy the model on a single-model server
+    - [ ] Deploy the model on a multi-model server
+    - [ ] Configure Token authorization w/ service account
+    - [ ] Test the inference API via Terminal
+    - [ ] Build training with Elyra
+      - Launch Elyra pipeline editor
+      - Configure pipeline properties for the nodes
+      - Drag the objects on the Elyra canvas
+      - Configure the Node Properties for File Dependencies
+      - Configure the data connection for the Node using Kubernetes Secrets
+      - Execute the DAG from the pipeline editor
+      - Inspect the Run Details 
+        - [ ] Schedule the pipeline to run once
+        - [ ] Schedule the pipeline to run on a schedule
+    - [ ] Build training with kfp SDK
+      - [ ] Import Pipeline coded with kfp SDK
 - [ ] Running Distributed Workloads
-    - [ ] From Notebooks
-        - [ ] Clone the CodeFlare SDK notebooks to the Fraud demo workbench
-        - [ ] From the terminal, login into the cluster
-        - [ ] Run a distributed workload job
-    - [ ] From Pipelines
-
-
-
-
-
-
+  - [ ] From Notebooks
+    - [ ] Clone the CodeFlare SDK notebooks to the Fraud demo workbench
+    - [ ] From the terminal, login into the cluster
+    - [ ] Run a distributed workload job
+  - [ ] From Pipelines
 
 TODO:
+
 - [ ] Mirroing images for disconnected installation
 - [ ] Model Serving runtimes using custom runtimes for TGI [source](https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2.9/html/serving_models/serving-large-models_serving-large-models#adding-a-custom-model-serving-runtime-for-the-single-model-serving-platform_serving-large-models)
 - [ ] Converting models to Caikit format [source](https://github.com/opendatahub-io/caikit-tgis-serving/blob/main/demo/kserve/built-tip.md#bootstrap-process)
@@ -269,7 +264,8 @@ TODO:
 - [ ] Dashboard configuration options [source](https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2.9//html/managing_resources/customizing-the-dashboard#ref-dashboard-configuration-options_dashboard)
 - [ ]  Adding a custom model-serving runtime for the single-model serving platform (source)[https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2.9/html/serving_models/serving-large-models_serving-large-models?extIdCarryOver=true&intcmp=701f2000001OMHaAAO&sc_cid=701f2000001Css5AAC#adding-a-custom-model-serving-runtime-for-the-single-model-serving-platform_serving-large-models]
 
-Questions
+### Questions
+
 1. How can you remove self-provisioner from datascience-users?
 1. How can datascience-admins pre-provision 1x workspace for datascience-users?
 1. Do you have to create a distributed workloads local queue per project?
